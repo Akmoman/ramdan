@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسابقة رمضان الإلكترونية</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .view-section {
+            display: none;
+            width: 100%;
+            justify-content: center;
+        }
+        .view-section.active {
+            display: flex;
+        }
+        /* Custom Scrollbar for Admin Table */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative selection:bg-amber-500/30">
+
+    <!-- Background Ornaments -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-10 right-10 text-amber-500/20 text-4xl animate-pulse">✨</div>
+        <div class="absolute top-40 left-20 text-amber-500/10 text-6xl animate-pulse" style="animation-delay: 1s;">✨</div>
+        <div class="absolute bottom-20 right-1/4 text-amber-500/20 text-3xl animate-pulse" style="animation-delay: 2s;">✨</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="z-10 w-full flex justify-center">
+
+        <!-- ================= HOME VIEW ================= -->
+        <div id="view-home" class="view-section active animate-fade-in">
+            <div class="flex flex-col items-center justify-center space-y-6 text-center">
+                <img src="https://storage.googleapis.com/akm1983/%D8%B4%D8%B9%D8%A7%D8%B1-02.png" alt="شعار فريق الظاهر الرياضي" class="w-32 md:w-48 h-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] z-10" />
+                <div class="relative">
+                    <i class="fas fa-moon text-amber-400 text-7xl md:text-8xl drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
+                    <i class="fas fa-star text-amber-200 text-2xl absolute -top-2 -right-2 animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">مسابقة رمضـان الإلكترونيـة</h1>
+                    <p class="text-xl text-amber-100/80 max-w-md mx-auto">اختبر معلوماتك الدينية واربح جوائز قيمة كل أسبوع</p>
+                    <div class="mt-6 bg-slate-800/80 border border-slate-700 rounded-full px-6 py-3 inline-block shadow-lg">
+                        <p class="text-sm md:text-base text-amber-400 font-bold">
+                            تنظيم: اللجنة الثقافية والاجتماعية بفريق الظاهر الرياضي
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md mt-8">
+                    <button onclick="switchView('register')" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold py-4 px-6 rounded-2xl shadow-xl transform transition hover:scale-105 flex items-center justify-center gap-2">
+                        <i class="fas fa-users text-lg"></i>
+                        <span>شارك الآن</span>
+                    </button>
+                    <button onclick="switchView('admin-login')" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-4 px-6 rounded-2xl shadow-xl transform transition hover:scale-105 flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-halved text-amber-400 text-lg"></i>
+                        <span>دخول الإدارة</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= REGISTER VIEW ================= -->
+        <div id="view-register" class="view-section animate-fade-in">
+            <div class="w-full max-w-md bg-slate-800/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-slate-700">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center border-b border-slate-700 pb-4">تسجيل بيانات المتسابق</h2>
+                <form id="form-register" class="space-y-6">
+                    <div>
+                        <label class="block text-amber-300 mb-2 text-sm font-semibold">الاسم الثلاثي</label>
+                        <input type="text" id="input-name" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="أدخل اسمك الكامل">
+                    </div>
+                    <div>
+                        <label class="block text-amber-300 mb-2 text-sm font-semibold">رقم الهاتف (مع الرمز الدولي)</label>
+                        <input type="tel" id="input-phone" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 text-left" placeholder="مثال: 96899999999+" dir="ltr">
+                        <p class="text-xs text-slate-400 mt-2">سيتم استخدام هذا الرقم لإبلاغك بالفوز عبر الواتساب</p>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition">
+                        <span>المتابعة للأسئلة</span>
+                        <i class="fas fa-chevron-left text-sm"></i>
+                    </button>
+                    <button type="button" onclick="switchView('home')" class="w-full text-slate-400 hover:text-white text-sm mt-4 transition">العودة للرئيسية</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= WEEK SELECTION VIEW ================= -->
+        <div id="view-week-selection" class="view-section animate-fade-in">
+            <div class="w-full max-w-lg bg-slate-800/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-slate-700">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-2">أهلاً بك، <span id="display-name"></span> 👋</h2>
+                    <p class="text-amber-200/80">اختر الأسبوع الحالي للإجابة على الأسئلة</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="weeks-container">
+                    <!-- Weeks will be injected here via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= QUIZ VIEW ================= -->
+        <div id="view-quiz" class="view-section animate-fade-in">
+            <div class="w-full max-w-2xl bg-slate-800/90 backdrop-blur-md p-6 md:p-10 rounded-3xl shadow-2xl border border-slate-700 overflow-y-auto max-h-[85vh]">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-white" id="quiz-title">أسئلة الأسبوع</h2>
+                    <span class="bg-amber-500/20 text-amber-400 px-4 py-1 rounded-full text-sm font-semibold" id="quiz-count"></span>
+                </div>
+                
+                <div id="questions-container" class="space-y-8">
+                    <!-- Questions will be injected here via JS -->
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button onclick="switchView('week-selection')" class="px-6 py-3 rounded-xl font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 transition">رجوع</button>
+                    <button id="btn-submit-quiz" onclick="submitQuiz()" disabled class="flex-1 py-3 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 transition bg-slate-600 cursor-not-allowed opacity-50">
+                        <span id="submit-text">اعتماد الإجابات</span>
+                        <i class="fas fa-circle-check text-lg hidden" id="submit-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUCCESS VIEW ================= -->
+        <div id="view-success" class="view-section animate-fade-in">
+            <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-md p-10 rounded-3xl shadow-2xl border border-slate-700 text-center">
+                <div class="w-24 h-24 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-circle-check text-5xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-4">تم الإرسال بنجاح!</h2>
+                <p class="text-slate-300 mb-8 leading-relaxed">
+                    شكراً لمشاركتك. تم حفظ إجاباتك بنجاح.
+                    <br/><br/>
+                    سيتم التواصل مع الفائزين عبر الواتساب. نتمنى لك التوفيق! 🌙
+                </p>
+                <button onclick="resetAndGoHome()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition">العودة للرئيسية</button>
+            </div>
+        </div>
+
+        <!-- ================= ADMIN LOGIN VIEW ================= -->
+        <div id="view-admin-login" class="view-section animate-fade-in">
+            <div class="w-full max-w-sm bg-slate-800/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-slate-700 text-center">
+                <i class="fas fa-shield-halved text-5xl text-amber-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-white mb-6">دخول الإدارة</h2>
+                <form id="form-admin-login">
+                    <input type="password" id="input-admin-pin" placeholder="أدخل رمز المرور" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 text-center text-xl tracking-widest mb-4 focus:outline-none focus:border-amber-500" dir="ltr">
+                    <p id="admin-error" class="text-red-400 text-sm mb-4 hidden">رمز المرور غير صحيح</p>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-3 rounded-xl transition">تسجيل الدخول</button>
+                </form>
+                <p class="text-xs text-slate-500 mt-6">للتجربة، الرمز هو: 2026</p>
+                <button onclick="switchView('home')" class="mt-4 text-slate-400 text-sm hover:text-white">إلغاء</button>
+            </div>
+        </div>
+
+        <!-- ================= ADMIN DASHBOARD VIEW ================= -->
+        <div id="view-admin-dashboard" class="view-section animate-fade-in">
+            <div class="w-full max-w-6xl bg-slate-800/95 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-700 flex flex-col h-[90vh]">
+                <!-- Header -->
+                <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-3xl">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-award text-3xl text-amber-400"></i>
+                        <h2 class="text-2xl font-bold text-white">لوحة تحكم المسابقة</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="bg-slate-800 px-4 py-2 rounded-lg text-amber-300 font-semibold border border-slate-700">
+                            المشاركات: <span id="admin-total-count">0</span>
+                        </div>
+                        <button onclick="logoutAdmin()" class="flex items-center gap-2 text-slate-400 hover:text-red-400 transition" title="تسجيل الخروج">
+                            <i class="fas fa-sign-out-alt text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-auto p-6 relative">
+                    <div id="admin-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-800/80 z-10 hidden">
+                        <i class="fas fa-spinner fa-spin text-4xl text-amber-500 mb-4"></i>
+                        <p class="text-white">جاري جلب البيانات...</p>
+                    </div>
+                    
+                    <div id="admin-empty" class="h-full flex flex-col items-center justify-center text-slate-500 hidden">
+                        <i class="fas fa-clock text-6xl mb-4 opacity-50"></i>
+                        <p class="text-xl">لا توجد مشاركات حتى الآن</p>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-700" id="admin-table-container">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-300 text-sm">
+                                    <th class="p-4 font-semibold">المتسابق</th>
+                                    <th class="p-4 font-semibold">رقم الهاتف</th>
+                                    <th class="p-4 font-semibold text-center">الأسبوع</th>
+                                    <th class="p-4 font-semibold text-center">النتيجة</th>
+                                    <th class="p-4 font-semibold">وقت المشاركة</th>
+                                    <th class="p-4 font-semibold text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body">
+                                <!-- Data will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Logic (Firebase + Vanilla JS) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuration & Initialization ---
+        const CURRENT_ACTIVE_WEEK = 1; // <--- قم بتغيير هذا الرقم لفتح الأسابيع القادمة
+        const ADMIN_PIN = '2026';
+
+        // استخدام إعدادات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAsmcMVSGXXGALh5xZmKNDwmv7fQMrmGo",
+            authDomain: "pctct-b700f.firebaseapp.com",
+            projectId: "pctct-b700f",
+            storageBucket: "pctct-b700f.firebasestorage.app",
+            messagingSenderId: "551206501024",
+            appId: "1:551206501024:web:fa2ac8a45f2aada58267c5",
+            measurementId: "G-YYHKWYK8YN"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'pctct-b700f';
+
+        // --- State Variables ---
+        let currentUser = null;
+        let participant = { name: '', phone: '' };
+        let selectedWeek = 1;
+        let answers = {};
+        let unsubscribeSubmissions = null;
+        let isSubmitting = false;
+
+        // --- Quiz Data ---
+        const quizData = {
+            1: [
+                { id: 'q1_1', videoId: '0MofM3htwyE', text: 'بناءً على المقطع المرئي، هل يُعد قيام الأبناء بحظر آبائهم في شبكات التواصل الاجتماعي ومنعهم من المتابعة بشكل متكرر من العقوق؟', options: ['نعم، يُعد من العقوق', 'لا، يُعد من الحرية الشخصية', 'مكروه ولكن ليس عقوقاً'], answer: 'نعم، يُعد من العقوق' },
+                { id: 'q1_2', text: 'ما هو التفسير الذي ذكره الشيخ لسبب لجوء بعض الأبناء لحظر آبائهم وأمهاتهم؟', options: ['لحماية خصوصيتهم من أصدقائهم', 'لأنهم يأتون بأفعال تسخط والديهم ويستحيون من اطلاعهم عليها', 'بسبب اختلاف الاهتمامات بين الأجيال'], answer: 'لأنهم يأتون بأفعال تسخط والديهم ويستحيون من اطلاعهم عليها' },
+                { id: 'q1_3', text: 'كيف وصف الشيخ قصة الجدة التي طلبت فتح حسابات لها لتتمكن من متابعة أحفادها لأنهم لا يتواصلون معها؟', options: ['وصفه بأنه جفاء وقطيعة', 'وصفه بأنه تطور طبيعي للعلاقات', 'وصفه بأنه حرص محمود من الجدة'], answer: 'وصفه بأنه جفاء وقطيعة' }
+            ],
+            2: [
+                { id: 'q2_1', text: 'من هو النبي الذي لُقب بأبي الأنبياء؟', options: ['إبراهيم عليه السلام', 'موسى عليه السلام', 'محمد صلى الله عليه وسلم'], answer: 'إبراهيم عليه السلام' },
+                { id: 'q2_2', text: 'كم عدد سور القرآن الكريم؟', options: ['114 سورة', '110 سورة', '120 سورة'], answer: '114 سورة' },
+                { id: 'q2_3', text: 'ما هي الصلاة التي تُصلى في ليالي رمضان فقط؟', options: ['صلاة الضحى', 'صلاة التراويح', 'صلاة الوتر'], answer: 'صلاة التراويح' }
+            ],
+            3: [
+                { id: 'q3_1', text: 'في أي عام هجري فُرض صيام رمضان؟', options: ['العام الأول', 'العام الثاني', 'العام الثالث'], answer: 'العام الثاني' },
+                { id: 'q3_2', text: 'من هو الصحابي الذي أشار بحفر الخندق؟', options: ['عمر بن الخطاب', 'سلمان الفارسي', 'علي بن أبي طالب'], answer: 'سلمان الفارسي' }
+            ],
+            4: [
+                { id: 'q4_1', text: 'متى يبدأ وقت إخراج زكاة الفطر؟', options: ['من أول رمضان', 'في العشر الأواخر', 'قبل صلاة العيد'], answer: 'من أول رمضان' },
+                { id: 'q4_2', text: 'ما هي الليلة التي هي خير من ألف شهر؟', options: ['ليلة الإسراء', 'ليلة القدر', 'ليلة النصف من شعبان'], answer: 'ليلة القدر' }
+            ]
+        };
+
+        // --- Authentication ---
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) { 
+                console.error("Auth Error:", error); 
+            }
+        }
+        initAuth();
+        onAuthStateChanged(auth, (user) => { currentUser = user; });
+
+        // --- Global Functions ---
+        window.switchView = (viewId) => {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            if (viewId !== 'admin-dashboard' && unsubscribeSubmissions) {
+                unsubscribeSubmissions();
+                unsubscribeSubmissions = null;
+            }
+
+            if (viewId === 'week-selection') renderWeeks();
+            if (viewId === 'admin-dashboard') startAdminListener();
+        };
+
+        window.resetAndGoHome = () => {
+            participant = { name: '', phone: '' };
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-phone').value = '';
+            window.switchView('home');
+        };
+
+        window.logoutAdmin = () => {
+            document.getElementById('input-admin-pin').value = '';
+            window.switchView('home');
+        };
+
+        window.handleSelectWeek = (week) => {
+            selectedWeek = week;
+            answers = {};
+            renderQuiz();
+            window.switchView('quiz');
+        };
+
+        window.selectOption = (questionId, optionValue) => {
+            answers[questionId] = optionValue;
+            
+            const radios = document.getElementsByName(questionId);
+            radios.forEach(radio => {
+                const label = radio.closest('label');
+                if (radio.value === optionValue) {
+                    label.className = "flex items-center p-4 rounded-xl cursor-pointer transition border bg-amber-500/10 border-amber-500 text-amber-300";
+                } else {
+                    label.className = "flex items-center p-4 rounded-xl cursor-pointer transition border bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700";
+                }
+            });
+
+            const questions = quizData[selectedWeek];
+            const allAnswered = questions.every(q => answers[q.id]);
+            const submitBtn = document.getElementById('btn-submit-quiz');
+            const submitIcon = document.getElementById('submit-icon');
+            
+            if (allAnswered) {
+                submitBtn.disabled = false;
+                submitBtn.className = "flex-1 py-3 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 transition bg-amber-500 hover:bg-amber-400";
+                submitIcon.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.className = "flex-1 py-3 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 transition bg-slate-600 cursor-not-allowed opacity-50";
+                submitIcon.classList.add('hidden');
+            }
+        };
+
+        window.submitQuiz = async () => {
+            if (isSubmitting) return;
+            if (!currentUser) {
+                alert("جاري الاتصال بالنظام.. يرجى التأكد من اتصال الإنترنت والمحاولة بعد قليل.");
+                return;
+            }
+
+            isSubmitting = true;
+            const btn = document.getElementById('btn-submit-quiz');
+            document.getElementById('submit-text').innerText = 'جاري الإرسال...';
+            
+            const weekQuestions = quizData[selectedWeek];
+            let score = 0;
+            weekQuestions.forEach(q => { if (answers[q.id] === q.answer) score++; });
+
+            try {
+                // حفظ البيانات في قاعدة البيانات
+                const submissionsRef = collection(db, 'artifacts', appId, 'public', 'data', 'ramadan_submissions');
+                await addDoc(submissionsRef, {
+                    userId: currentUser.uid,
+                    name: participant.name,
+                    phone: participant.phone,
+                    week: selectedWeek,
+                    score: score,
+                    totalQuestions: weekQuestions.length,
+                    answers: answers,
+                    timestamp: serverTimestamp()
+                });
+                window.switchView('success');
+            } catch (error) {
+                console.error("Submission error:", error);
+                alert("حدث خطأ أثناء الإرسال. تأكد من تفعيل قواعد الحماية في Firebase والمحاولة مرة أخرى.");
+            } finally {
+                isSubmitting = false;
+                document.getElementById('submit-text').innerText = 'اعتماد الإجابات';
+            }
+        };
+
+        window.sendWhatsApp = (phone, name, week, score, total) => {
+            let formattedPhone = phone.replace(/\D/g, '');
+            if (formattedPhone.startsWith('0')) formattedPhone = formattedPhone.substring(1);
+            if (!formattedPhone.startsWith('968') && formattedPhone.length === 8) {
+                formattedPhone = '968' + formattedPhone; 
+            }
+            const message = `مرحباً ${name}! 🌙\nنبارك لك مشاركتك وإبداعك في مسابقة رمضان الإلكترونية (الأسبوع ${week}). 🎉\nنتيجتك هي: ${score} من ${total}.\nتقبل الله طاعتكم وكل عام وأنتم بخير. ✨`;
+            window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        };
+
+        // --- Event Listeners ---
+        document.getElementById('form-register').addEventListener('submit', (e) => {
+            e.preventDefault();
+            participant.name = document.getElementById('input-name').value.trim();
+            participant.phone = document.getElementById('input-phone').value.trim();
+            if (participant.name && participant.phone) {
+                document.getElementById('display-name').innerText = participant.name;
+                window.switchView('week-selection');
+            }
+        });
+
+        document.getElementById('form-admin-login').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pin = document.getElementById('input-admin-pin').value;
+            const errorEl = document.getElementById('admin-error');
+            if (pin === ADMIN_PIN) {
+                errorEl.classList.add('hidden');
+                window.switchView('admin-dashboard');
+            } else {
+                errorEl.classList.remove('hidden');
+            }
+        });
+
+        // --- Rendering Logic ---
+        function renderWeeks() {
+            const container = document.getElementById('weeks-container');
+            container.innerHTML = '';
+            [1, 2, 3, 4].forEach(week => {
+                const isLocked = week > CURRENT_ACTIVE_WEEK;
+                const btnHTML = `
+                    <button 
+                        ${isLocked ? 'disabled' : `onclick="handleSelectWeek(${week})"`}
+                        class="p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition group border ${isLocked ? 'bg-slate-800/50 border-slate-700/50 cursor-not-allowed opacity-60' : 'bg-slate-900 hover:bg-slate-700 border-slate-700 hover:border-amber-500 text-white'}"
+                    >
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center ${isLocked ? 'bg-slate-800 text-slate-500' : 'bg-slate-800 group-hover:bg-amber-500/20 text-amber-400 group-hover:text-amber-300'}">
+                            ${isLocked ? '<i class="fas fa-lock text-lg"></i>' : `<span class="text-xl font-bold">${week}</span>`}
+                        </div>
+                        <span class="font-semibold ${isLocked ? 'text-slate-500' : ''}">
+                            ${isLocked ? 'يفتح قريباً' : `أسئلة الأسبوع ${week}`}
+                        </span>
+                    </button>
+                `;
+                container.innerHTML += btnHTML;
+            });
+        }
+
+        function renderQuiz() {
+            const questions = quizData[selectedWeek];
+            document.getElementById('quiz-title').innerText = `أسئلة الأسبوع ${selectedWeek}`;
+            document.getElementById('quiz-count').innerText = `${questions.length} أسئلة`;
+            
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                let videoHTML = '';
+                if (q.videoId) {
+                    videoHTML = `
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black">
+                            <iframe width="100%" src="https://www.youtube.com/embed/${q.videoId}?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full aspect-video"></iframe>
+                        </div>
+                    `;
+                }
+
+                let optionsHTML = q.options.map(opt => {
+                    const isSelected = answers[q.id] === opt;
+                    return `
+                        <label class="flex items-center p-4 rounded-xl cursor-pointer transition border ${isSelected ? 'bg-amber-500/10 border-amber-500 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}">
+                            <input type="radio" name="${q.id}" value="${opt}" ${isSelected ? 'checked' : ''} onchange="selectOption('${q.id}', '${opt}')" class="w-5 h-5 text-amber-500 bg-slate-900 border-slate-600 focus:ring-amber-500 focus:ring-offset-slate-900">
+                            <span class="mr-3 font-medium">${opt}</span>
+                        </label>
+                    `;
+                }).join('');
+
+                container.innerHTML += `
+                    <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700/50">
+                        ${videoHTML}
+                        <h3 class="text-lg text-white font-semibold mb-4 leading-relaxed">
+                            <span class="text-amber-500 ml-2">${index + 1}.</span> ${q.text}
+                        </h3>
+                        <div class="space-y-3">
+                            ${optionsHTML}
+                        </div>
+                    </div>
+                `;
+            });
+
+            const allAnswered = questions.every(q => answers[q.id]);
+            const submitBtn = document.getElementById('btn-submit-quiz');
+            const submitIcon = document.getElementById('submit-icon');
+            
+            if (allAnswered) {
+                submitBtn.disabled = false;
+                submitBtn.className = "flex-1 py-3 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 transition bg-amber-500 hover:bg-amber-400";
+                submitIcon.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.className = "flex-1 py-3 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 transition bg-slate-600 cursor-not-allowed opacity-50";
+                submitIcon.classList.add('hidden');
+            }
+        }
+
+        function startAdminListener() {
+            if (!currentUser) return;
+            document.getElementById('admin-loading').classList.remove('hidden');
+            
+            const submissionsRef = collection(db, 'artifacts', appId, 'public', 'data', 'ramadan_submissions');
+            
+            unsubscribeSubmissions = onSnapshot(submissionsRef, (snapshot) => {
+                document.getElementById('admin-loading').classList.add('hidden');
+                
+                let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                data.sort((a, b) => {
+                    const timeA = a.timestamp?.toMillis?.() || 0;
+                    const timeB = b.timestamp?.toMillis?.() || 0;
+                    return timeB - timeA; 
+                });
+
+                document.getElementById('admin-total-count').innerText = data.length;
+                
+                const tableBody = document.getElementById('admin-table-body');
+                const emptyState = document.getElementById('admin-empty');
+                const tableContainer = document.getElementById('admin-table-container');
+
+                if (data.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    tableContainer.classList.add('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                    tableContainer.classList.remove('hidden');
+                    tableBody.innerHTML = '';
+                    
+                    data.forEach((sub, idx) => {
+                        const dateStr = sub.timestamp ? new Intl.DateTimeFormat('ar-EG', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }).format(sub.timestamp.toDate()) : 'الآن';
+                        const isFullMark = sub.score === sub.totalQuestions;
+                        
+                        tableBody.innerHTML += `
+                            <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition ${idx % 2 === 0 ? 'bg-slate-800/30' : ''}">
+                                <td class="p-4 font-medium text-white">${sub.name}</td>
+                                <td class="p-4 text-amber-200/80" dir="ltr">${sub.phone}</td>
+                                <td class="p-4 text-center"><span class="bg-slate-700 text-white px-3 py-1 rounded-full text-xs">الأسبوع ${sub.week}</span></td>
+                                <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${isFullMark ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300'}">${sub.score} / ${sub.totalQuestions}</span></td>
+                                <td class="p-4 text-sm text-slate-400 whitespace-nowrap">${dateStr}</td>
+                                <td class="p-4 text-center">
+                                    <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions})" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-green-900/20" title="مراسلة عبر واتساب">
+                                        <i class="fab fa-whatsapp text-lg"></i>
+                                        <span>مراسلة</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            }, (error) => {
+                console.error("Error fetching submissions:", error);
+                document.getElementById('admin-loading').classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
