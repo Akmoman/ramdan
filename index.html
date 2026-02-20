@@ -45,6 +45,20 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 relative selection:bg-amber-500/30">
 
+    <!-- Custom Modal for Alerts and Confirmations -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center backdrop-blur-sm px-4">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center animate-fade-in">
+            <div class="w-16 h-16 bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-bell text-2xl" id="modal-icon"></i>
+            </div>
+            <p id="modal-message" class="text-white text-lg font-semibold mb-6"></p>
+            <div class="flex gap-3">
+                <button id="modal-btn-cancel" onclick="closeModal()" class="flex-1 py-2 rounded-xl font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 transition">إلغاء</button>
+                <button id="modal-btn-confirm" onclick="executeModalAction()" class="flex-1 py-2 rounded-xl font-bold text-slate-900 bg-amber-500 hover:bg-amber-400 transition">حسناً</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Background Ornaments -->
     <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 rounded-full blur-[100px]"></div>
@@ -180,12 +194,18 @@
         <div id="view-admin-dashboard" class="view-section animate-fade-in">
             <div class="w-full max-w-6xl bg-slate-800/95 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-700 flex flex-col h-[90vh]">
                 <!-- Header -->
-                <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-3xl">
+                <div class="p-6 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 rounded-t-3xl gap-4">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-award text-3xl text-amber-400"></i>
                         <h2 class="text-2xl font-bold text-white">لوحة تحكم المسابقة</h2>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
+                        <button onclick="exportWinners()" class="bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-green-600/30 flex items-center gap-2" title="تصدير الإجابات الصحيحة (Excel)">
+                            <i class="fas fa-file-excel"></i><span class="hidden sm:inline">تصدير</span>
+                        </button>
+                        <button onclick="confirmDeleteAll()" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-red-600/30 flex items-center gap-2" title="حذف كافة المشاركات">
+                            <i class="fas fa-trash-alt"></i><span class="hidden sm:inline">حذف الكل</span>
+                        </button>
                         <div class="bg-slate-800 px-4 py-2 rounded-lg text-amber-300 font-semibold border border-slate-700">
                             المشاركات: <span id="admin-total-count">0</span>
                         </div>
@@ -234,7 +254,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuration & Initialization ---
         const CURRENT_ACTIVE_WEEK = 1; // <--- قم بتغيير هذا الرقم لفتح الأسابيع القادمة
@@ -263,6 +283,9 @@
         let answers = {};
         let unsubscribeSubmissions = null;
         let isSubmitting = false;
+        
+        window.currentSubmissions = [];
+        let modalCallback = null;
 
         // --- Quiz Data ---
         const quizData = {
@@ -298,6 +321,36 @@
         onAuthStateChanged(auth, (user) => { currentUser = user; });
 
         // --- Global Functions ---
+        window.showModal = (message, callback = null) => {
+            document.getElementById('modal-message').innerText = message;
+            const cancelBtn = document.getElementById('modal-btn-cancel');
+            const confirmBtn = document.getElementById('modal-btn-confirm');
+            const icon = document.getElementById('modal-icon');
+
+            if (callback) {
+                cancelBtn.classList.remove('hidden');
+                confirmBtn.innerText = 'تأكيد';
+                icon.className = "fas fa-exclamation-triangle text-2xl"; // Warning icon
+            } else {
+                cancelBtn.classList.add('hidden');
+                confirmBtn.innerText = 'حسناً';
+                icon.className = "fas fa-info-circle text-2xl"; // Info icon
+            }
+
+            document.getElementById('custom-modal').classList.remove('hidden');
+            modalCallback = callback;
+        };
+
+        window.closeModal = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+            modalCallback = null;
+        };
+
+        window.executeModalAction = () => {
+            if (modalCallback) modalCallback();
+            window.closeModal();
+        };
+
         window.switchView = (viewId) => {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${viewId}`).classList.add('active');
@@ -362,7 +415,7 @@
         window.submitQuiz = async () => {
             if (isSubmitting) return;
             if (!currentUser) {
-                alert("جاري الاتصال بالنظام.. يرجى التأكد من اتصال الإنترنت والمحاولة بعد قليل.");
+                window.showModal("جاري الاتصال بالنظام.. يرجى التأكد من اتصال الإنترنت والمحاولة بعد قليل.");
                 return;
             }
 
@@ -390,7 +443,7 @@
                 window.switchView('success');
             } catch (error) {
                 console.error("Submission error:", error);
-                alert("حدث خطأ أثناء الإرسال. تأكد من تفعيل قواعد الحماية في Firebase والمحاولة مرة أخرى.");
+                window.showModal("حدث خطأ أثناء الإرسال. تأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.");
             } finally {
                 isSubmitting = false;
                 document.getElementById('submit-text').innerText = 'اعتماد الإجابات';
@@ -404,7 +457,59 @@
                 formattedPhone = '968' + formattedPhone; 
             }
             const message = `مرحباً ${name}! 🌙\nنبارك لك مشاركتك وإبداعك في مسابقة رمضان الإلكترونية (الأسبوع ${week}). 🎉\nنتيجتك هي: ${score} من ${total}.\nتقبل الله طاعتكم وكل عام وأنتم بخير. ✨`;
-            window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+            
+            const url = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.exportWinners = () => {
+            const winners = window.currentSubmissions.filter(s => s.score === s.totalQuestions);
+            if (winners.length === 0) {
+                window.showModal('لا يوجد فائزين بالإجابات الصحيحة الكاملة لتصديرهم في الوقت الحالي.');
+                return;
+            }
+            
+            let csv = '\uFEFF'; // BOM لدعم اللغة العربية في إكسل
+            csv += 'الاسم,رقم الهاتف,الأسبوع,النتيجة,تاريخ المشاركة\n';
+            
+            winners.forEach(w => {
+                const dateStr = w.timestamp ? new Date(w.timestamp.toDate()).toLocaleString('ar-EG') : 'الآن';
+                csv += `"${w.name}","${w.phone}","${w.week}","${w.score} من ${w.totalQuestions}","${dateStr}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'الفائزون_مسابقة_رمضان.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.confirmDeleteAll = () => {
+            if(window.currentSubmissions.length === 0) return;
+            window.showModal('هل أنت متأكد من رغبتك في حذف جميع المشاركات نهائياً؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
+                document.getElementById('admin-loading').classList.remove('hidden');
+                for(const sub of window.currentSubmissions) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ramadan_submissions', sub.id));
+                    } catch(e) { console.error(e); }
+                }
+                document.getElementById('admin-loading').classList.add('hidden');
+            });
+        };
+
+        window.confirmDeleteSingle = (id) => {
+            window.showModal('هل أنت متأكد من حذف هذه المشاركة؟', async () => {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ramadan_submissions', id));
+                } catch(e) { console.error(e); }
+            });
         };
 
         // --- Event Listeners ---
@@ -526,6 +631,7 @@
                     return timeB - timeA; 
                 });
 
+                window.currentSubmissions = data;
                 document.getElementById('admin-total-count').innerText = data.length;
                 
                 const tableBody = document.getElementById('admin-table-body');
@@ -552,10 +658,14 @@
                                 <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${isFullMark ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300'}">${sub.score} / ${sub.totalQuestions}</span></td>
                                 <td class="p-4 text-sm text-slate-400 whitespace-nowrap">${dateStr}</td>
                                 <td class="p-4 text-center">
-                                    <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions})" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-green-900/20" title="مراسلة عبر واتساب">
-                                        <i class="fab fa-whatsapp text-lg"></i>
-                                        <span>مراسلة</span>
-                                    </button>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions})" class="bg-green-600 hover:bg-green-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-green-900/20" title="مراسلة عبر واتساب">
+                                            <i class="fab fa-whatsapp text-lg"></i>
+                                        </button>
+                                        <button onclick="confirmDeleteSingle('${sub.id}')" class="bg-red-600/80 hover:bg-red-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-red-900/20" title="حذف المشاركة">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         `;
