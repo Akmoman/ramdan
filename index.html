@@ -216,11 +216,20 @@
                         <h2 class="text-2xl font-bold text-white">لوحة تحكم المسابقة</h2>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
+                        <!-- فلتر الأسابيع الجديد -->
+                        <select id="admin-week-filter" onchange="renderAdminTable()" class="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                            <option value="all">جميع الأسابيع</option>
+                            <option value="1">الأسبوع الأول</option>
+                            <option value="2" selected>الأسبوع الثاني</option>
+                            <option value="3">الأسبوع الثالث</option>
+                            <option value="4">الأسبوع الرابع</option>
+                        </select>
+                        
                         <button onclick="exportWinners()" class="bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-green-600/30 flex items-center gap-2" title="تصدير الإجابات الصحيحة (Excel)">
                             <span>📊</span><span class="hidden sm:inline">تصدير الفائزين</span>
                         </button>
-                        <button onclick="confirmDeleteAll()" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-red-600/30 flex items-center gap-2" title="حذف كافة المشاركات">
-                            <span>🗑️</span><span class="hidden sm:inline">حذف الكل</span>
+                        <button onclick="confirmDeleteAll()" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-red-600/30 flex items-center gap-2" title="حذف المشاركات المعروضة">
+                            <span>🗑️</span><span class="hidden sm:inline">حذف المعروض</span>
                         </button>
                         <div class="bg-slate-800 px-4 py-2 rounded-lg text-amber-300 font-semibold border border-slate-700">
                             المشاركات: <span id="admin-total-count">0</span>
@@ -284,14 +293,13 @@
 
         // --- Configuration & Initialization ---
         
+        // تفعيل الأسبوع الثاني وقفل الأسبوع الأول
+        const CURRENT_ACTIVE_WEEK = 2; 
+
         // لوحة تحكم سريعة لحالات الأسابيع
-        // الخيارات المتاحة: 
-        // 'active'   -> مفتوح للإجابة
-        // 'sorting'  -> مغلق (جاري الفرز للفائزين الثلاثة)
-        // 'upcoming' -> مغلق (يفتح قريباً)
         const WEEKS_STATUS = {
             1: 'sorting',  // الأسبوع الأول الآن مغلق وجاري الفرز
-            2: 'upcoming', // يمكنك تغيير هذه إلى 'active' عند بدء الأسبوع الثاني
+            2: 'active',   // الأسبوع الثاني مفتوح
             3: 'upcoming',
             4: 'upcoming'
         };
@@ -317,7 +325,7 @@
         // --- State Variables ---
         let currentUser = null;
         let participant = { name: '', phone: '' };
-        let selectedWeek = 1;
+        let selectedWeek = 2;
         let answers = {};
         let unsubscribeSubmissions = null;
         let isSubmitting = false;
@@ -466,7 +474,12 @@
             }
 
             if (viewId === 'week-selection') renderWeeks();
-            if (viewId === 'admin-dashboard') startAdminListener();
+            if (viewId === 'admin-dashboard') {
+                // نعيد تعيين الفلتر للأسبوع الثاني كافتراضي عند دخول الإدارة الآن
+                const filterEl = document.getElementById('admin-week-filter');
+                if(filterEl) filterEl.value = '2'; 
+                startAdminListener();
+            }
         };
 
         window.resetAndGoHome = () => {
@@ -556,13 +569,21 @@
         };
 
         // --- Admin Functions ---
-        window.sendWhatsApp = (phone, name, week, score, total) => {
+        window.sendWhatsApp = (phone, name, week, score, total, type) => {
             let formattedPhone = phone.replace(/\D/g, '');
             if (formattedPhone.startsWith('0')) formattedPhone = formattedPhone.substring(1);
             if (!formattedPhone.startsWith('968') && formattedPhone.length === 8) {
                 formattedPhone = '968' + formattedPhone; 
             }
-            const message = `مرحباً ${name}! 🌙\nنبارك لك مشاركتك وإبداعك في مسابقة رمضان الإلكترونية (الأسبوع ${week}). 🎉\nنتيجتك هي: ${score} من ${total}.\nتقبل الله طاعتكم وكل عام وأنتم بخير. ✨`;
+            
+            let message = '';
+            if (type === 'winner') {
+                // رسالة الفائز 
+                message = `مرحباً ${name}! 🌙\nنبارك لك فوزك في مسابقة رمضان الإلكترونية (الأسبوع ${week}). 🎉🏆\nلقد تم اختيارك ضمن الفائزين! يسرنا إبلاغك بأنه سيتم تسليم الجوائز للفائزين في نهاية شهر رمضان المبارك إن شاء الله. 🎁\nتقبل الله طاعتكم وكل عام وأنتم بخير. ✨`;
+            } else {
+                // رسالة الشكر والمشاركة
+                message = `مرحباً ${name}! 🌙\nشكراً لمشاركتك في مسابقة رمضان الإلكترونية (الأسبوع ${week}).\nنتيجتك هي: ${score} من ${total}.\nنتمنى لك التوفيق في الأسابيع القادمة! تقبل الله طاعتكم وكل عام وأنتم بخير. ✨`;
+            }
             
             const url = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
             const link = document.createElement('a');
@@ -573,10 +594,68 @@
             document.body.removeChild(link);
         };
 
+        // دالة مخصصة لرسم جدول الإدارة بناءً على الفلتر
+        window.renderAdminTable = () => {
+            const filterVal = document.getElementById('admin-week-filter') ? document.getElementById('admin-week-filter').value : 'all';
+            let dataToRender = window.currentSubmissions;
+            
+            if (filterVal !== 'all') {
+                dataToRender = window.currentSubmissions.filter(sub => String(sub.week) === filterVal);
+            }
+
+            document.getElementById('admin-total-count').innerText = dataToRender.length;
+            const tableBody = document.getElementById('admin-table-body');
+            const emptyState = document.getElementById('admin-empty');
+            const tableContainer = document.getElementById('admin-table-container');
+
+            if (dataToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+                tableBody.innerHTML = '';
+                
+                dataToRender.forEach((sub, idx) => {
+                    const dateStr = sub.timestamp ? new Intl.DateTimeFormat('ar-EG', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }).format(sub.timestamp.toDate()) : 'الآن';
+                    const isFullMark = sub.score === sub.totalQuestions;
+                    
+                    tableBody.innerHTML += `
+                        <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition ${idx % 2 === 0 ? 'bg-slate-800/30' : ''}">
+                            <td class="p-4 font-medium text-white">${sub.name}</td>
+                            <td class="p-4 text-amber-200/80" dir="ltr">${sub.phone}</td>
+                            <td class="p-4 text-center"><span class="bg-slate-700 text-white px-3 py-1 rounded-full text-xs">الأسبوع ${sub.week}</span></td>
+                            <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${isFullMark ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300'}">${sub.score} / ${sub.totalQuestions}</span></td>
+                            <td class="p-4 text-sm text-slate-400 whitespace-nowrap">${dateStr}</td>
+                            <td class="p-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions}, 'winner')" class="bg-amber-500 hover:bg-amber-400 text-slate-900 w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-amber-900/20" title="تبشير بالفوز">
+                                        🏆
+                                    </button>
+                                    <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions}, 'thanks')" class="bg-green-600 hover:bg-green-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-green-900/20" title="رسالة شكر ونتيجة">
+                                        💬
+                                    </button>
+                                    <button onclick="confirmDeleteSingle('${sub.id}')" class="bg-red-600/80 hover:bg-red-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-red-900/20" title="حذف المشاركة">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        };
+
         window.exportWinners = () => {
-            const winners = window.currentSubmissions.filter(s => s.score === s.totalQuestions);
+            const filterVal = document.getElementById('admin-week-filter') ? document.getElementById('admin-week-filter').value : 'all';
+            let dataToExport = window.currentSubmissions;
+            if (filterVal !== 'all') {
+                dataToExport = window.currentSubmissions.filter(sub => String(sub.week) === filterVal);
+            }
+
+            const winners = dataToExport.filter(s => s.score === s.totalQuestions);
             if (winners.length === 0) {
-                window.showModal('لا يوجد فائزين بالإجابات الصحيحة الكاملة لتصديرهم في الوقت الحالي.');
+                window.showModal('لا يوجد فائزين بالإجابات الصحيحة الكاملة في الأسبوع المعروض لتصديرهم.');
                 return;
             }
             
@@ -591,17 +670,24 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'الفائزون_مسابقة_رمضان.csv';
+            link.download = `الفائزون_مسابقة_رمضان_${filterVal === 'all' ? 'الكل' : 'اسبوع_'+filterVal}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         };
 
         window.confirmDeleteAll = () => {
-            if(window.currentSubmissions.length === 0) return;
-            window.showModal('هل أنت متأكد من رغبتك في حذف جميع المشاركات نهائياً؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
+            const filterVal = document.getElementById('admin-week-filter') ? document.getElementById('admin-week-filter').value : 'all';
+            let dataToDelete = window.currentSubmissions;
+            if (filterVal !== 'all') {
+                dataToDelete = window.currentSubmissions.filter(sub => String(sub.week) === filterVal);
+            }
+
+            if(dataToDelete.length === 0) return;
+
+            window.showModal(`هل أنت متأكد من رغبتك في حذف جميع المشاركات المعروضة (${dataToDelete.length} مشاركة) نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`, async () => {
                 document.getElementById('admin-loading').classList.remove('hidden');
-                for(const sub of window.currentSubmissions) {
+                for(const sub of dataToDelete) {
                     try {
                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ramadan_submissions', sub.id));
                     } catch(e) { console.error(e); }
@@ -764,45 +850,8 @@
                 });
 
                 window.currentSubmissions = data;
-                document.getElementById('admin-total-count').innerText = data.length;
+                window.renderAdminTable(); // استدعاء دالة الرسم الجديدة التي تحترم الفلتر
                 
-                const tableBody = document.getElementById('admin-table-body');
-                const emptyState = document.getElementById('admin-empty');
-                const tableContainer = document.getElementById('admin-table-container');
-
-                if (data.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    tableContainer.classList.add('hidden');
-                } else {
-                    emptyState.classList.add('hidden');
-                    tableContainer.classList.remove('hidden');
-                    tableBody.innerHTML = '';
-                    
-                    data.forEach((sub, idx) => {
-                        const dateStr = sub.timestamp ? new Intl.DateTimeFormat('ar-EG', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }).format(sub.timestamp.toDate()) : 'الآن';
-                        const isFullMark = sub.score === sub.totalQuestions;
-                        
-                        tableBody.innerHTML += `
-                            <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition ${idx % 2 === 0 ? 'bg-slate-800/30' : ''}">
-                                <td class="p-4 font-medium text-white">${sub.name}</td>
-                                <td class="p-4 text-amber-200/80" dir="ltr">${sub.phone}</td>
-                                <td class="p-4 text-center"><span class="bg-slate-700 text-white px-3 py-1 rounded-full text-xs">الأسبوع ${sub.week}</span></td>
-                                <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${isFullMark ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300'}">${sub.score} / ${sub.totalQuestions}</span></td>
-                                <td class="p-4 text-sm text-slate-400 whitespace-nowrap">${dateStr}</td>
-                                <td class="p-4 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button onclick="sendWhatsApp('${sub.phone}', '${sub.name}', ${sub.week}, ${sub.score}, ${sub.totalQuestions})" class="bg-green-600 hover:bg-green-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-green-900/20" title="مراسلة عبر واتساب">
-                                            💬
-                                        </button>
-                                        <button onclick="confirmDeleteSingle('${sub.id}')" class="bg-red-600/80 hover:bg-red-500 text-white w-9 h-9 rounded-lg flex items-center justify-center transition shadow-lg shadow-red-900/20" title="حذف المشاركة">
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
             }, (error) => {
                 console.error("Error fetching submissions:", error);
                 document.getElementById('admin-loading').classList.add('hidden');
