@@ -368,8 +368,7 @@
             2: [
                 { 
                     id: 'q2_1', 
-                    // تم الرجوع لرابط جوجل درايف المباشر (MP4) لتخطي حظر يوتيوب للتضمين
-                    videoUrl: 'https://storage.googleapis.com/akm1983/(98)%20%D9%82%D8%B5%D8%A9%20%D8%B1%D9%8A%D8%A7%D8%AD%20%D9%85%D8%B9%20%D8%B2%D9%88%D8%AC%D9%87%D8%A7%20%D9%88%D9%82%D8%B5%D8%B5%20%D8%A7%D9%94%D8%AE%D8%B1%D9%89%20%D8%A7%D9%84%D8%B4%D9%8A%D8%AE%20%D9%85%D8%B3%D8%B9%D9%88%D8%AF%20%D8%A7%D9%84%D9%85%D9%82%D8%A8%D8%A7%D9%84%D9%8A%20(1).mp4', 
+                    videoId: 'NWI1M3upzEA', // تم استخدام معرف الفيديو المباشر لضمان العمل
                     text: 'ما هما الكتابان اللذان نصح الشيخ بقراءتهما في البيوت لمعرفة سير السلف والهمة في العبادة؟', 
                     options: ['سير الشماخي وطبقات الدرجيني', 'رياض الصالحين وفتح الباري', 'جوهر النظام وتلقين الصبيان'], 
                     answer: 'سير الشماخي وطبقات الدرجيني' 
@@ -880,11 +879,10 @@
                         </div>
                     `;
                 } else if (q.videoUrl && q.videoUrl.includes('.mp4')) {
-                    // تشغيل ملف MP4 المباشر مع إضافة أيقونة تحميل
+                    // تشغيل ملف MP4 المباشر في حال تم استخدامه لاحقاً
                     videoHTML = `
-                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black relative w-full aspect-video flex justify-center items-center">
-                            <span class="absolute text-amber-500 text-4xl animate-spin z-0 opacity-50">⏳</span>
-                            <video controls playsinline preload="auto" class="absolute top-0 left-0 w-full h-full object-contain bg-transparent z-10" src="${q.videoUrl}">
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black relative w-full aspect-video">
+                            <video controls playsinline class="absolute top-0 left-0 w-full h-full object-contain bg-black" src="${q.videoUrl}">
                                 متصفحك لا يدعم تشغيل الفيديو.
                             </video>
                         </div>
