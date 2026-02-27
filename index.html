@@ -192,6 +192,26 @@
             </div>
         </div>
 
+        <!-- ================= RESULTS VIEW (إعلان الفائزين) ================= -->
+        <div id="view-results" class="view-section animate-fade-in">
+            <div class="w-full max-w-2xl bg-slate-800/90 backdrop-blur-md p-6 md:p-10 rounded-3xl shadow-2xl border border-slate-700 text-center">
+                <h2 class="text-2xl font-bold text-white mb-6" id="results-title">نتائج الفائزين - الأسبوع</h2>
+                
+                <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black w-full aspect-video relative">
+                    <video id="results-video" controls playsinline class="absolute top-0 left-0 w-full h-full object-contain bg-black">
+                        متصفحك لا يدعم تشغيل الفيديو.
+                    </video>
+                </div>
+
+                <p class="text-amber-200/80 mb-8 font-semibold">نبارك لجميع الفائزين وحظاً أوفر لمن لم يحالفهم الحظ 🌹</p>
+
+                <button onclick="switchView('week-selection')" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    <span>العودة لقائمة الأسابيع</span>
+                    <span>🔙</span>
+                </button>
+            </div>
+        </div>
+
         <!-- ================= ADMIN LOGIN VIEW ================= -->
         <div id="view-admin-login" class="view-section animate-fade-in">
             <div class="w-full max-w-sm bg-slate-800/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-slate-700 text-center">
@@ -216,7 +236,7 @@
                         <h2 class="text-2xl font-bold text-white">لوحة تحكم المسابقة</h2>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
-                        <!-- فلتر الأسابيع الجديد -->
+                        <!-- فلتر الأسابيع -->
                         <select id="admin-week-filter" onchange="renderAdminTable()" class="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
                             <option value="all">جميع الأسابيع</option>
                             <option value="1">الأسبوع الأول</option>
@@ -298,10 +318,15 @@
 
         // لوحة تحكم سريعة لحالات الأسابيع
         const WEEKS_STATUS = {
-            1: 'sorting',  // الأسبوع الأول الآن مغلق وجاري الفرز
+            1: 'results',  // إعلان نتائج الأسبوع الأول (فيديو)
             2: 'active',   // الأسبوع الثاني مفتوح
             3: 'upcoming',
             4: 'upcoming'
+        };
+
+        // روابط فيديوهات إعلان النتائج
+        const RESULTS_VIDEOS = {
+            1: "https://storage.googleapis.com/akm1983/%D8%A7%D8%B9%D9%84%D8%A7%D9%86%20%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%8A%D9%86%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%A7%D9%88%D9%84.mp4"
         };
         
         const ADMIN_PIN = 'akm1983';
@@ -341,9 +366,38 @@
                 { id: 'q1_3', text: 'كيف وصف الشيخ قصة الجدة التي طلبت فتح حسابات لها لتتمكن من متابعة أحفادها لأنهم لا يتواصلون معها؟', options: ['وصفه بأنه جفاء وقطيعة', 'وصفه بأنه تطور طبيعي للعلاقات', 'وصفه بأنه حرص محمود من الجدة'], answer: 'وصفه بأنه جفاء وقطيعة' }
             ],
             2: [
-                { id: 'q2_1', text: 'من هو النبي الذي لُقب بأبي الأنبياء؟', options: ['إبراهيم عليه السلام', 'موسى عليه السلام', 'محمد صلى الله عليه وسلم'], answer: 'إبراهيم عليه السلام' },
-                { id: 'q2_2', text: 'كم عدد سور القرآن الكريم؟', options: ['114 سورة', '110 سورة', '120 سورة'], answer: '114 سورة' },
-                { id: 'q2_3', text: 'ما هي الصلاة التي تُصلى في ليالي رمضان فقط؟', options: ['صلاة الضحى', 'صلاة التراويح', 'صلاة الوتر'], answer: 'صلاة التراويح' }
+                { 
+                    id: 'q2_1', 
+                    // تم الرجوع لرابط جوجل درايف المباشر (MP4) لتخطي حظر يوتيوب للتضمين
+                    videoUrl: 'https://storage.googleapis.com/akm1983/(98)%20%D9%82%D8%B5%D8%A9%20%D8%B1%D9%8A%D8%A7%D8%AD%20%D9%85%D8%B9%20%D8%B2%D9%88%D8%AC%D9%87%D8%A7%20%D9%88%D9%82%D8%B5%D8%B5%20%D8%A7%D9%94%D8%AE%D8%B1%D9%89%20%D8%A7%D9%84%D8%B4%D9%8A%D8%AE%20%D9%85%D8%B3%D8%B9%D9%88%D8%AF%20%D8%A7%D9%84%D9%85%D9%82%D8%A8%D8%A7%D9%84%D9%8A%20(1).mp4', 
+                    text: 'ما هما الكتابان اللذان نصح الشيخ بقراءتهما في البيوت لمعرفة سير السلف والهمة في العبادة؟', 
+                    options: ['سير الشماخي وطبقات الدرجيني', 'رياض الصالحين وفتح الباري', 'جوهر النظام وتلقين الصبيان'], 
+                    answer: 'سير الشماخي وطبقات الدرجيني' 
+                },
+                { 
+                    id: 'q2_2', 
+                    text: 'ماذا حدث عندما انتقلت الجارية التي باعها "علي بن صالح" إلى بيت أسيادها الجدد؟', 
+                    options: ['أيقظتهم في ثلث الليل للصلاة فأخبروها أنهم يصلون الفرض فقط', 'أعجبت بنومهم وراحتهم وتركت قيام الليل', 'هربت من بيتهم في اليوم التالي مباشرة'], 
+                    answer: 'أيقظتهم في ثلث الليل للصلاة فأخبروها أنهم يصلون الفرض فقط' 
+                },
+                { 
+                    id: 'q2_3', 
+                    text: 'ما هي الكرامة التي ذكرها الشيخ عن "الحسن بن صالح بن حيي" عند تجهيزه للغسل؟', 
+                    options: ['نطق يطلب الإسراع في تجهيزه لأن النبي ﷺ ينتظر للصلاة عليه', 'فاحت منه رائحة المسك التي ملأت أرجاء المكان', 'استيقظ وودع أخاه "علي" ثم مات'], 
+                    answer: 'نطق يطلب الإسراع في تجهيزه لأن النبي ﷺ ينتظر للصلاة عليه' 
+                },
+                { 
+                    id: 'q2_4', 
+                    text: 'كم كان ورد الشيخ شامس البطاشي (رحمه الله) من القرآن الكريم في اليوم الواحد؟', 
+                    options: ['عشرة أجزاء', 'جزء واحد', 'خمسة أجزاء'], 
+                    answer: 'عشرة أجزاء' 
+                },
+                { 
+                    id: 'q2_5', 
+                    text: 'كم ركعة كان يصلي الشيخ سعيد بن راشد يومياً كورد له بحسب ما ذكر في المقطع؟', 
+                    options: ['120 ركعة', '80 ركعة', '40 ركعة'], 
+                    answer: '120 ركعة' 
+                }
             ],
             3: [
                 { id: 'q3_1', text: 'في أي عام هجري فُرض صيام رمضان؟', options: ['العام الأول', 'العام الثاني', 'العام الثالث'], answer: 'العام الثاني' },
@@ -425,6 +479,20 @@
             window.closeModal();
         };
 
+        window.showResults = (week) => {
+            const videoUrl = RESULTS_VIDEOS[week];
+            if (videoUrl) {
+                document.getElementById('results-title').innerText = `نتائج الفائزين - الأسبوع ${week}`;
+                const videoEl = document.getElementById('results-video');
+                // تحديث المصدر مباشرة بدون source element
+                videoEl.src = videoUrl;
+                videoEl.load();
+                window.switchView('results');
+            } else {
+                window.showModal('لم يتم رفع فيديو النتائج لهذا الأسبوع بعد.');
+            }
+        };
+
         window.updateTicker = async (event) => {
             if (!currentUser) return;
             const text = document.getElementById('admin-ticker-input').value;
@@ -468,6 +536,12 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${viewId}`).classList.add('active');
             
+            // إيقاف الفيديو تلقائياً عند الخروج من شاشة النتائج
+            const resultsVideo = document.getElementById('results-video');
+            if (resultsVideo && viewId !== 'results') {
+                resultsVideo.pause();
+            }
+
             if (viewId !== 'admin-dashboard' && unsubscribeSubmissions) {
                 unsubscribeSubmissions();
                 unsubscribeSubmissions = null;
@@ -748,6 +822,18 @@
                             </span>
                         </button>
                     `;
+                } else if (status === 'results') {
+                    btnHTML = `
+                        <button onclick="showResults(${week})" class="p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition group border bg-green-900/20 border-green-700/50 hover:bg-green-800/40 shadow-lg shadow-green-900/10">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-900/50 text-green-400 group-hover:scale-110 transition">
+                                <span class="text-2xl">🏆</span>
+                            </div>
+                            <span class="font-bold text-green-300 text-center leading-relaxed">
+                                الأسبوع ${week}<br/>
+                                <span class="text-sm text-green-200/80 font-semibold">شاهد الفائزين 🎬</span>
+                            </span>
+                        </button>
+                    `;
                 } else if (status === 'upcoming') {
                     btnHTML = `
                         <button disabled class="p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition group border bg-slate-800/50 border-slate-700/50 cursor-not-allowed opacity-60">
@@ -787,9 +873,20 @@
             questions.forEach((q, index) => {
                 let videoHTML = '';
                 if (q.videoId) {
+                    // تشغيل مقطع يوتيوب باستخدام الكود المباشر والتصريحات التي أرسلتها
                     videoHTML = `
-                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black">
-                            <iframe width="100%" src="https://www.youtube.com/embed/${q.videoId}?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full aspect-video"></iframe>
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black relative w-full aspect-video">
+                            <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${q.videoId}?rel=0" title="قصة رياح مع زوجها وقصص أخرى الشيخ مسعود المقبالي" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    `;
+                } else if (q.videoUrl && q.videoUrl.includes('.mp4')) {
+                    // تشغيل ملف MP4 المباشر مع إضافة أيقونة تحميل
+                    videoHTML = `
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg border border-slate-700 bg-black relative w-full aspect-video flex justify-center items-center">
+                            <span class="absolute text-amber-500 text-4xl animate-spin z-0 opacity-50">⏳</span>
+                            <video controls playsinline preload="auto" class="absolute top-0 left-0 w-full h-full object-contain bg-transparent z-10" src="${q.videoUrl}">
+                                متصفحك لا يدعم تشغيل الفيديو.
+                            </video>
                         </div>
                     `;
                 }
