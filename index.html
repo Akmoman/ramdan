@@ -889,6 +889,12 @@
                     `;
                 }
 
+                // خلط الخيارات عشوائياً (مرة واحدة فقط لتجنب إعادة الخلط عند كل تحديث)
+                if (!q.shuffled) {
+                    q.options = q.options.sort(() => Math.random() - 0.5);
+                    q.shuffled = true;
+                }
+
                 let optionsHTML = q.options.map(opt => {
                     const isSelected = answers[q.id] === opt;
                     return `
