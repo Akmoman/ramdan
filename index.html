@@ -246,8 +246,8 @@
                             <option value="all">جميع الأسابيع</option>
                             <option value="1">الأسبوع الأول</option>
                             <option value="2">الأسبوع الثاني</option>
-                            <option value="3" selected>الأسبوع الثالث</option>
-                            <option value="4">الأسبوع الرابع</option>
+                            <option value="3">الأسبوع الثالث</option>
+                            <option value="4" selected>الأسبوع الرابع</option>
                         </select>
                         
                         <button onclick="exportWinners()" class="bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition border border-green-600/30 flex items-center gap-2" title="تصدير الإجابات الصحيحة (Excel)">
@@ -318,21 +318,22 @@
 
         // --- Configuration & Initialization ---
         
-        // تفعيل الأسبوع الثالث وقفل الأسبوعين الأول والثاني
-        const CURRENT_ACTIVE_WEEK = 3; 
+        // تفعيل الأسبوع الرابع وقفل بقية الأسابيع
+        const CURRENT_ACTIVE_WEEK = 4; 
 
         // لوحة تحكم سريعة لحالات الأسابيع
         const WEEKS_STATUS = {
             1: 'results',  // إعلان نتائج الأسبوع الأول (فيديو)
             2: 'results',  // إعلان نتائج الأسبوع الثاني (فيديو)
-            3: 'active',   // الأسبوع الثالث مفتوح
-            4: 'upcoming'
+            3: 'results',  // إعلان نتائج الأسبوع الثالث (فيديو)
+            4: 'active'    // الأسبوع الرابع مفتوح
         };
 
         // روابط فيديوهات إعلان النتائج
         const RESULTS_VIDEOS = {
             1: "https://storage.googleapis.com/akm1983/%D8%A7%D8%B9%D9%84%D8%A7%D9%86%20%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%8A%D9%86%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%A7%D9%88%D9%84.mp4",
-            2: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%88%D9%86%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A.mp4"
+            2: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%88%D9%86%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A.mp4",
+            3: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB.mp4"
         };
         
         const ADMIN_PIN = 'akm1983';
@@ -356,7 +357,7 @@
         // --- State Variables ---
         let currentUser = null;
         let participant = { name: '', phone: '' };
-        let selectedWeek = 2;
+        let selectedWeek = 4;
         let answers = {};
         let unsubscribeSubmissions = null;
         let isSubmitting = false;
@@ -438,8 +439,37 @@
                 }
             ],
             4: [
-                { id: 'q4_1', text: 'متى يبدأ وقت إخراج زكاة الفطر؟', options: ['من أول رمضان', 'في العشر الأواخر', 'قبل صلاة العيد'], answer: 'من أول رمضان' },
-                { id: 'q4_2', text: 'ما هي الليلة التي هي خير من ألف شهر؟', options: ['ليلة الإسراء', 'ليلة القدر', 'ليلة النصف من شعبان'], answer: 'ليلة القدر' }
+                { 
+                    id: 'q4_1', 
+                    videoId: 'my92lZlGwKw',
+                    text: 'ماذا قال مولى "عروة" (أخو أبي بلال) عندما سُئل عن عبادته؟', 
+                    options: ['ما فرشت له فراشاً بليل قط ولا وضعت له طعاماً بنهار قط', 'كان ينام أول الليل ويقوم آخره', 'كان يكثر من الصدقة ولا يخبر أحداً'], 
+                    answer: 'ما فرشت له فراشاً بليل قط ولا وضعت له طعاماً بنهار قط' 
+                },
+                { 
+                    id: 'q4_2', 
+                    text: 'ما هو الاتفاق الذي عقده السجّان مع "أبي بلال"؟', 
+                    options: ['أن يطلق سراحه ليلاً ليزور أهله بشرط أن يعود قبل الفجر', 'أن يعطيه مالاً مقابل أن يهرب ولا يعود أبداً', 'أن يخفف عنه القيود مقابل أن يعلمه القرآن'], 
+                    answer: 'أن يطلق سراحه ليلاً ليزور أهله بشرط أن يعود قبل الفجر' 
+                },
+                { 
+                    id: 'q4_3', 
+                    text: 'ما هو الخبر الذي وصل إلى السجّان في تلك الليلة وجعله في قلق شديد؟', 
+                    options: ['أن عبيد الله بن زياد أمر بقتل كل من في السجن', 'أن السجن سيتعرض لهجوم من الأعداء', 'أن أبا بلال قد هرب خارج المدينة'], 
+                    answer: 'أن عبيد الله بن زياد أمر بقتل كل من في السجن' 
+                },
+                { 
+                    id: 'q4_4', 
+                    text: 'لماذا عاد أبو بلال إلى السجن قبل الفجر رغم علمه بقرار القتل؟', 
+                    options: ['وفاءً بعهده وحتى لا يقع السجّان الذي أحسن إليه في العقوبة', 'لأنه لم يجد طريقاً للهرب خارج المدينة', 'لأنه كان يطمع في عفو عبيد الله بن زياد'], 
+                    answer: 'وفاءً بعهده وحتى لا يقع السجّان الذي أحسن إليه في العقوبة' 
+                },
+                { 
+                    id: 'q4_5', 
+                    text: 'ماذا فعل السجّان في الصباح عندما أُخرج المساجين للقتل؟', 
+                    options: ['توسل لعبيد الله بن زياد وأخبره بالقصة ليعفو عن أبي بلال', 'هرب من السجن خوفاً من القتل', 'نفذ حكم القتل بنفسه دون أن يتحدث'], 
+                    answer: 'توسل لعبيد الله بن زياد وأخبره بالقصة ليعفو عن أبي بلال' 
+                }
             ]
         };
 
@@ -583,9 +613,9 @@
 
             if (viewId === 'week-selection') renderWeeks();
             if (viewId === 'admin-dashboard') {
-                // نعيد تعيين الفلتر للأسبوع الثالث كافتراضي عند دخول الإدارة الآن
+                // نعيد تعيين الفلتر للأسبوع الرابع كافتراضي عند دخول الإدارة الآن
                 const filterEl = document.getElementById('admin-week-filter');
-                if(filterEl) filterEl.value = '3'; 
+                if(filterEl) filterEl.value = '4'; 
                 startAdminListener();
             }
         };
