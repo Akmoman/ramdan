@@ -318,22 +318,23 @@
 
         // --- Configuration & Initialization ---
         
-        // تفعيل الأسبوع الرابع وقفل بقية الأسابيع
-        const CURRENT_ACTIVE_WEEK = 4; 
+        // إغلاق جميع الأسابيع وإعلان النتائج
+        const CURRENT_ACTIVE_WEEK = 5; 
 
         // لوحة تحكم سريعة لحالات الأسابيع
         const WEEKS_STATUS = {
             1: 'results',  // إعلان نتائج الأسبوع الأول (فيديو)
             2: 'results',  // إعلان نتائج الأسبوع الثاني (فيديو)
             3: 'results',  // إعلان نتائج الأسبوع الثالث (فيديو)
-            4: 'active'    // الأسبوع الرابع مفتوح
+            4: 'results'   // إعلان نتائج الأسبوع الرابع (فيديو)
         };
 
         // روابط فيديوهات إعلان النتائج
         const RESULTS_VIDEOS = {
             1: "https://storage.googleapis.com/akm1983/%D8%A7%D8%B9%D9%84%D8%A7%D9%86%20%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%8A%D9%86%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%A7%D9%88%D9%84.mp4",
             2: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D9%81%D8%A7%D9%8A%D9%94%D8%B2%D9%88%D9%86%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A.mp4",
-            3: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB.mp4"
+            3: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%AB%D8%A7%D9%84%D8%AB.mp4",
+            4: "https://storage.googleapis.com/akm1983/%D8%A7%D9%84%D8%A7%D8%B3%D8%A8%D9%88%D8%B9%20%D8%A7%D9%84%D8%B1%D8%A7%D8%A8%D8%B9.mp4"
         };
         
         const ADMIN_PIN = 'akm1983';
